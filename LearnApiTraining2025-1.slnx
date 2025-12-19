@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="learnapitraining2025-1.client/learnapitraining2025-1.client.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="LearnApiTraining2025-1.Server/LearnApiTraining2025-1.Server.csproj" />
+</Solution>
