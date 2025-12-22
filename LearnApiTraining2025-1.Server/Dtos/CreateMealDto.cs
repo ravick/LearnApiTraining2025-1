@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using LearnApiTraining2025_1.Server.Domain;
 
 namespace LearnApiTraining2025_1.Server.Dtos;
 
@@ -9,7 +10,8 @@ public class CreateMealDto
 
     [Required]
     [MaxLength(20)]
-    public string MealType { get; set; } = string.Empty;
+    public MealType MealType { get; set; }
+
 
     [Required]
     [MaxLength(200)]

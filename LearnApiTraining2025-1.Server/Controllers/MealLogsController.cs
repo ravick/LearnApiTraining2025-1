@@ -1,5 +1,7 @@
 ﻿using LearnApiTraining2025_1.Server.Data;
+using LearnApiTraining2025_1.Server.Domain;
 using LearnApiTraining2025_1.Server.Dtos;
+using LearnApiTraining2025_1.Server.Dtos.Common;
 using LearnApiTraining2025_1.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +25,9 @@ public class MealLogsController : ControllerBase
     public async Task<IActionResult> GetAllMeals(
         [FromQuery] DateTime? from,
         [FromQuery] DateTime? to,
-        [FromQuery] string? mealType)
+        [FromQuery] MealType? mealType,
+        int page = 1,
+        int pageSize = 10)
     {
 
         
@@ -39,14 +43,37 @@ public class MealLogsController : ControllerBase
             query = query.Where(m => m.MealTime <= to.Value);
         }
 
-        if (!string.IsNullOrWhiteSpace(mealType))
+        //if (!string.IsNullOrWhiteSpace(mealType))
+        //{
+        //    query = query.Where(m =>
+        //        EF.Functions.Like(m.MealType, mealType));
+        //}
+
+        if(mealType.HasValue)
         {
-            query = query.Where(m =>
-                EF.Functions.Like(m.MealType, mealType));
+            query = query.Where(m => m.MealType == mealType.Value);
         }
 
-        var meals = await query
+        var baseQuery = query; // filtered query
+
+        var totalCount = await baseQuery.CountAsync();
+
+        //var meals = await query
+        //    .OrderByDescending(m => m.MealTime)
+        //    .Select(m => new MealResponseDto
+        //    {
+        //        Id = m.Id,
+        //        MealTime = m.MealTime,
+        //        MealType = m.MealType,
+        //        Description = m.Description,
+        //        Calories = m.Calories
+        //    })
+        //    .ToListAsync();
+
+        var meals = await baseQuery
             .OrderByDescending(m => m.MealTime)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(m => new MealResponseDto
             {
                 Id = m.Id,
@@ -56,6 +83,15 @@ public class MealLogsController : ControllerBase
                 Calories = m.Calories
             })
             .ToListAsync();
+
+        var result = new PagedResult<MealResponseDto>
+        {
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            Items = meals
+        };
+
 
         return Ok(meals);
 

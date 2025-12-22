@@ -10,4 +10,13 @@ public class AppDbContext : DbContext
     }
 
     public DbSet<MealLog> MealLogs => Set<MealLog>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<MealLog>()
+            .Property(m => m.MealType)
+            .HasConversion<int>();
+    }
 }
