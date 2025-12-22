@@ -1,4 +1,5 @@
 ﻿using LearnApiTraining2025_1.Server.Data;
+using LearnApiTraining2025_1.Server.Dtos;
 using LearnApiTraining2025_1.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,9 +26,7 @@ public class MealLogsController : ControllerBase
         [FromQuery] string? mealType)
     {
 
-        Console.WriteLine("🔥 GetAllMeals endpoint HIT");
-        Console.WriteLine($"🔥 mealType param value: '{mealType ?? "NULL"}'");
-
+        
         IQueryable<MealLog> query = _db.MealLogs;
 
         if (from.HasValue)
@@ -48,24 +47,55 @@ public class MealLogsController : ControllerBase
 
         var meals = await query
             .OrderByDescending(m => m.MealTime)
+            .Select(m => new MealResponseDto
+            {
+                Id = m.Id,
+                MealTime = m.MealTime,
+                MealType = m.MealType,
+                Description = m.Description,
+                Calories = m.Calories
+            })
             .ToListAsync();
 
         return Ok(meals);
+
     }
 
-    // POST /api/meals
     [HttpPost]
-    public async Task<IActionResult> CreateMeal(MealLog meal)
+    public async Task<IActionResult> CreateMeal(CreateMealDto dto)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var meal = new MealLog
+        {
+            MealTime = dto.MealTime,
+            MealType = dto.MealType,
+            Description = dto.Description,
+            Calories = dto.Calories
+        };
+
         _db.MealLogs.Add(meal);
         await _db.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetAllMeals), new { id = meal.Id }, meal);
+        var response = new MealResponseDto
+        {
+            Id = meal.Id,
+            MealTime = meal.MealTime,
+            MealType = meal.MealType,
+            Description = meal.Description,
+            Calories = meal.Calories
+        };
+
+        return CreatedAtAction(nameof(GetAllMeals), new { id = meal.Id }, response);
     }
+
 
     // PUT /api/meals/{id}
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateMeal(int id, MealLog updatedMeal)
+    public async Task<IActionResult> UpdateMeal(int id, CreateMealDto updatedMeal)
     {
         var existingMeal = await _db.MealLogs.FindAsync(id);
 
