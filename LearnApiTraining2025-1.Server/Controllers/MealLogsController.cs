@@ -19,9 +19,34 @@ public class MealLogsController : ControllerBase
 
     // GET /api/meals
     [HttpGet]
-    public async Task<IActionResult> GetAllMeals()
+    public async Task<IActionResult> GetAllMeals(
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        [FromQuery] string? mealType)
     {
-        var meals = await _db.MealLogs
+
+        Console.WriteLine("🔥 GetAllMeals endpoint HIT");
+        Console.WriteLine($"🔥 mealType param value: '{mealType ?? "NULL"}'");
+
+        IQueryable<MealLog> query = _db.MealLogs;
+
+        if (from.HasValue)
+        {
+            query = query.Where(m => m.MealTime >= from.Value);
+        }
+
+        if (to.HasValue)
+        {
+            query = query.Where(m => m.MealTime <= to.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(mealType))
+        {
+            query = query.Where(m =>
+                EF.Functions.Like(m.MealType, mealType));
+        }
+
+        var meals = await query
             .OrderByDescending(m => m.MealTime)
             .ToListAsync();
 
