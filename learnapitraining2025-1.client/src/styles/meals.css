@@ -91,3 +91,22 @@ button {
         opacity: 0.4;
         cursor: not-allowed;
     }
+@media (max-width: 600px) {
+    .container {
+        padding: 0 12px;
+    }
+
+    .meal-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .calories {
+        align-self: flex-end;
+    }
+
+    .title {
+        font-size: 22px;
+    }
+}

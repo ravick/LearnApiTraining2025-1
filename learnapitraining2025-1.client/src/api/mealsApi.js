@@ -1,5 +1,15 @@
 const BASE_URL = "/api/meals";
 
+export async function deleteMeal(id) {
+  const response = await fetch(`/api/meals/${id}`, {
+    method: "DELETE"
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete meal");
+  }
+}
+
 export async function getMeals({
   page = 1,
   pageSize = 10,
