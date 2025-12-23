@@ -29,8 +29,11 @@ public class MealLogsController : ControllerBase
         int page = 1,
         int pageSize = 10)
     {
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize < 1 ? 10 : pageSize;
+        pageSize = Math.Min(pageSize, 50);
 
-        
+
         IQueryable<MealLog> query = _db.MealLogs;
 
         if (from.HasValue)
@@ -54,21 +57,15 @@ public class MealLogsController : ControllerBase
             query = query.Where(m => m.MealType == mealType.Value);
         }
 
-        var baseQuery = query; // filtered query
+        var baseQuery = query;
 
         var totalCount = await baseQuery.CountAsync();
 
-        //var meals = await query
-        //    .OrderByDescending(m => m.MealTime)
-        //    .Select(m => new MealResponseDto
-        //    {
-        //        Id = m.Id,
-        //        MealTime = m.MealTime,
-        //        MealType = m.MealType,
-        //        Description = m.Description,
-        //        Calories = m.Calories
-        //    })
-        //    .ToListAsync();
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        if (totalPages > 0 && page > totalPages)
+        {
+            page = totalPages;
+        }
 
         var meals = await baseQuery
             .OrderByDescending(m => m.MealTime)
@@ -84,16 +81,14 @@ public class MealLogsController : ControllerBase
             })
             .ToListAsync();
 
-        var result = new PagedResult<MealResponseDto>
+        return Ok(new PagedResult<MealResponseDto>
         {
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount,
             Items = meals
-        };
+        });
 
-
-        return Ok(meals);
 
     }
 

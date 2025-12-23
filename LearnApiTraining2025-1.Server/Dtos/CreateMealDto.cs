@@ -9,7 +9,6 @@ public class CreateMealDto
     public DateTime MealTime { get; set; }
 
     [Required]
-    [MaxLength(20)]
     public MealType MealType { get; set; }
 
 
